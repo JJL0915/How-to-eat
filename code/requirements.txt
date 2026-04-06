@@ -1,0 +1,10 @@
+langchain[standard]>=1.0.0,<2.0.0
+faiss-cpu>=1.7.0
+unstructured>=0.19.0
+Markdown>=3.8.2
+lazy_loader==0.4
+rank_bm25==0.2.2
+openai>=1.86.0,<2.0.0
+dashscope>=1.19.0
+sentence-transformers>=3.0.0
+langchain-huggingface>=0.3.0
