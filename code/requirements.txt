@@ -8,3 +8,4 @@ openai>=1.86.0,<2.0.0
 dashscope>=1.19.0
 sentence-transformers>=3.0.0
 langchain-huggingface>=0.3.0
+langchain_community==0.4.1
