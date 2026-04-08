@@ -8,7 +8,7 @@ __all__ = [
     "DataPreparationModule",
     "IndexConstructionModule",
     "RetrievalOptimizationModule",
-    "GenerationIntergrationModule",
+    "GenerationIntegrationModule",
 ]
 
 __version__ = "1.0.0"
