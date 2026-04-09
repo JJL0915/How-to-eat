@@ -16,6 +16,9 @@ class RAGConfig:
 
     # 模型配置
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
+    # embedding_model: str = (
+    #     r"C:\Users\jjl0915\.cache\huggingface\hub\models--BAAI--bge-small-zh-v1.5\snapshots"
+    # )
     llm_model: str = "qwen3.5-35b-a3b"
 
     # 检索配置

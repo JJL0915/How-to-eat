@@ -242,7 +242,7 @@ class GenerationIntegrationModule:
         )
 
         chain = (
-            {"question": RunnablePassthrough(), "context": context}
+            {"question": RunnablePassthrough(), "context": lambda _: context}
             | prompt
             | self.llm
             | StrOutputParser()
@@ -371,7 +371,7 @@ class GenerationIntegrationModule:
         )
 
         chain = (
-            {"question": RunnablePassthrough(), "context": context}
+            {"question": RunnablePassthrough(), "context": lambda _: context}
             | prompt
             | self.llm
             | StrOutputParser()

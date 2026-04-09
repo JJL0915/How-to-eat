@@ -34,15 +34,7 @@ class DataPreparationModule:
 
     CATEGORY_LABLES = list(set(CATEGORY_MAPPING.values()))
 
-    class DifficultyLevel(Enum):
-        """制作难度枚举类"""
-
-        VERY_EASY = "非常简单"
-        EASY = "简单"
-        MEDIUM = "中等"
-        HARD = "困难"
-        VERY_HARD = "非常困难"
-        UNKNOWN = "未知"
+    DIFFICULTY_LABELS = ["非常简单", "简单", "中等", "困难", "非常困难"]
 
     def __init__(self, data_path: str):
         """
@@ -127,7 +119,7 @@ class DataPreparationModule:
 
         # 从文件路径推断分类
         doc.metadata["category"] = "其他"
-        for key, value in self.CATEGORY_LABLES.items():
+        for key, value in self.CATEGORY_MAPPING.items():
             if key in path_parts:
                 doc.metadata["category"] = value
                 break
@@ -138,17 +130,17 @@ class DataPreparationModule:
         # 分析难度等级
         content = doc.page_content
         if "★★★★★" in content:
-            doc.metadata["difficulty"] = self.DifficultyLevel.VERY_HARD
+            doc.metadata["difficulty"] = "非常困难"
         elif "★★★★" in content:
-            doc.metadata["difficulty"] = self.DifficultyLevel.HARD
+            doc.metadata["difficulty"] = "困难"
         elif "★★★" in content:
-            doc.metadata["difficulty"] = self.DifficultyLevel.MEDIUM
+            doc.metadata["difficulty"] = "中等"
         elif "★★" in content:
-            doc.metadata["difficulty"] = self.DifficultyLevel.EASY
+            doc.metadata["difficulty"] = "简单"
         elif "★" in content:
-            doc.metadata["difficulty"] = self.DifficultyLevel.VERY_EASY
+            doc.metadata["difficulty"] = "非常简单"
         else:
-            doc.metadata["difficulty"] = self.DifficultyLevel.UNKNOWN
+            doc.metadata["difficulty"] = "未知"
 
     @classmethod
     def get_supported_categories(cls) -> List[str]:
@@ -158,7 +150,7 @@ class DataPreparationModule:
     @classmethod
     def get_supported_difficulties(cls) -> List[str]:
         """对外提供支持的难度标签列表"""
-        return [level.value for level in cls.DifficultyLevel]
+        return cls.DIFFICULTY_LABELS
 
     def chunk_documents(self) -> List[Document]:
         """
