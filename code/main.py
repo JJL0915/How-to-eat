@@ -69,7 +69,7 @@ class RecipeRAGSystem:
             index_save_path=self.config.index_save_path,
         )
 
-        # 3.初始化检索模块
+        # 3.初始化生成模块
         print("🤖 初始化生成集成模块...")
         self.generation_module = GenerationIntegrationModule(
             model_name=self.config.llm_model,
@@ -267,7 +267,7 @@ class RecipeRAGSystem:
         # 难度关键词
         difficulty_keywords = DataPreparationModule.get_supported_difficulties()
         for diff in sorted(difficulty_keywords, key=len, reverse=True):
-            if diff in difficulty_keywords:
+            if diff in query:
                 filters["difficulty"] = diff
                 break
         return filters

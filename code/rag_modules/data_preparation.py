@@ -207,7 +207,7 @@ class DataPreparationModule:
                 # 检查文档内容是否包含Markdown标题
                 content_preview = doc.page_content[:200]
                 has_headers = any(
-                    line.strip().startwith("#") for line in content_preview.split("\n")
+                    line.strip().startswith("#") for line in content_preview.split("\n")
                 )
 
                 if not has_headers:
