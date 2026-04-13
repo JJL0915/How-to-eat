@@ -1,12 +1,11 @@
 """
-RAG系统 FastAPI 后端服务（现代 lifespan 写法）
+RAG系统 FastAPI 后端服务
 """
 
-import os
 import sys
 import logging
 from pathlib import Path
-from contextlib import asynccontextmanager  # 新增：生命周期管理器
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
@@ -26,14 +25,13 @@ logger = logging.getLogger(__name__)
 rag_system = None
 
 
-# ===================== 现代 Lifespan 写法 =====================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     应用生命周期管理：启动时初始化RAG，关闭时可做清理
     """
     global rag_system
-    # -------------- 启动时执行（替代 startup）--------------
+
     try:
         rag_system = RecipeRAGSystem(DEFAULT_CONFIG)
         rag_system.initialize_system()
@@ -46,14 +44,11 @@ async def lifespan(app: FastAPI):
     # 挂载应用运行
     yield
 
-    # -------------- 关闭时执行（替代 shutdown，可选）--------------
     logger.info("🔌 服务已关闭，RAG系统已退出")
 
 
 # 初始化FastAPI，传入 lifespan
-app = FastAPI(
-    title="食谱RAG智能问答系统", version="1.0", lifespan=lifespan  # 关键：绑定生命周期
-)
+app = FastAPI(title="食谱RAG智能问答系统", version="1.0", lifespan=lifespan)
 
 # ===================== 跨域配置（不变）=====================
 app.add_middleware(
@@ -71,7 +66,7 @@ class QuestionRequest(BaseModel):
     stream: bool = True
 
 
-# ===================== API接口（完全不变）=====================
+# ===================== API接口=====================
 @app.get("/", summary="访问前端页面")
 def get_frontend():
     return FileResponse("index.html")
