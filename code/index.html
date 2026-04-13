@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍽️ 食谱RAG智能问答系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+
+        body {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e64398;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            height: 850px;
+            /* 已拉长 */
+            overflow-y: auto;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            background-color: #fce4ec;
+            margin-right: auto;
+            white-space: pre-wrap;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #question-input {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        #send-btn {
+            padding: 15px 30px;
+            background-color: #e64398;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #send-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🍽️ 尝尝咸淡 - 食谱RAG智能问答系统</h1>
+        <p>解决你的选择困难症，告别"今天吃什么"的世纪难题！</p>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <div class="message bot-message">
+            你好！我是你的智能食谱助手，你可以问我任何关于做菜的问题~
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="question-input" placeholder="请输入你的问题（例如：番茄炒蛋怎么做？）">
+        <button id="send-btn">发送</button>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const questionInput = document.getElementById('question-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // 发送问题
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // 清空输入框
+            questionInput.value = '';
+            // 添加用户消息
+            addMessage(question, 'user');
+            // 禁用按钮
+            sendBtn.disabled = true;
+
+            // 添加机器人加载提示
+            const loadingDiv = addMessage('思考中...', 'bot');
+
+            try {
+                // 调用后端API
+                const response = await fetch('http://localhost:8001/api/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question, stream: true })
+                });
+
+                // 移除加载提示
+                chatContainer.removeChild(loadingDiv);
+                // 创建机器人消息框
+                const botMsgDiv = addMessage('', 'bot');
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    // 实时追加文字
+                    botMsgDiv.textContent += decoder.decode(value, { stream: true });
+                    // 滚动到底部
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }
+
+            } catch (error) {
+                loadingDiv.textContent = `❌ 出错了：${error.message}`;
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        // 添加消息到聊天框
+        function addMessage(text, type) {
+            const div = document.createElement('div');
+            div.className = `message ${type}-message`;
+            div.textContent = text;
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return div;
+        }
+
+        // 绑定事件
+        sendBtn.addEventListener('click', sendQuestion);
+        questionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendQuestion();
+        });
+    </script>
+</body>
+
+</html>
