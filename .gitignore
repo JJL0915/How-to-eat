@@ -17,3 +17,6 @@ __pycache__/
 
 # 忽略RAG系统流程分析报告
 RAG系统流程分析报告.txt
+
+#忽视优化文件
+code/optimize.txt
