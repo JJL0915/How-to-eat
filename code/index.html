@@ -130,7 +130,7 @@
 
             try {
                 // 调用后端API
-                const response = await fetch('http://localhost:8001/api/ask', {
+                const response = await fetch('http://localhost:8000/api/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ question: question, stream: true })
