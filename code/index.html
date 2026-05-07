@@ -40,19 +40,95 @@
         .message {
             margin-bottom: 15px;
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 18px;
             max-width: 80%;
+            width: fit-content;
+            line-height: 1.6;
+            position: relative;
+            word-break: break-word;
         }
 
         .user-message {
             background-color: #e3f2fd;
             margin-left: auto;
+            border-bottom-right-radius: 6px;
         }
 
         .bot-message {
             background-color: #fce4ec;
             margin-right: auto;
+            border-bottom-left-radius: 6px;
             white-space: pre-wrap;
+        }
+
+        .bot-message::before,
+        .user-message::before {
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            width: 12px;
+            height: 12px;
+            background: inherit;
+            transform: rotate(45deg);
+        }
+
+        .bot-message::before {
+            left: -4px;
+            border-bottom-left-radius: 3px;
+        }
+
+        .user-message::before {
+            right: -4px;
+            border-top-right-radius: 3px;
+        }
+
+        .thinking-message {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 96px;
+        }
+
+        .thinking-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .thinking-dots span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #e64398;
+            opacity: 0.35;
+            animation: thinking-bounce 1.2s infinite ease-in-out;
+        }
+
+        .thinking-dots span:nth-child(2) {
+            animation-delay: 0.16s;
+        }
+
+        .thinking-dots span:nth-child(3) {
+            animation-delay: 0.32s;
+        }
+
+        .thinking-text {
+            color: #8f4268;
+            font-size: 14px;
+        }
+
+        @keyframes thinking-bounce {
+            0%,
+            80%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.35;
+            }
+
+            40% {
+                transform: translateY(-4px);
+                opacity: 1;
+            }
         }
 
         .input-area {
@@ -85,8 +161,7 @@
         }
 
         .loading {
-            color: #666;
-            font-style: italic;
+            color: #8f4268;
         }
     </style>
 </head>
@@ -98,9 +173,7 @@
     </div>
 
     <div class="chat-container" id="chat-container">
-        <div class="message bot-message">
-            你好！我是你的智能食谱助手，你可以问我任何关于做菜的问题~
-        </div>
+        <div class="message bot-message">你好！我是你的智能食谱助手，你可以问我任何关于做菜的问题~</div>
     </div>
 
     <div class="input-area">
@@ -125,8 +198,8 @@
             // 禁用按钮
             sendBtn.disabled = true;
 
-            // 添加机器人加载提示
-            const loadingDiv = addMessage('思考中...', 'bot');
+            // 添加机器人思考气泡
+            const botMsgDiv = addThinkingMessage();
 
             try {
                 // 调用后端API
@@ -136,10 +209,9 @@
                     body: JSON.stringify({ question: question, stream: true })
                 });
 
-                // 移除加载提示
-                chatContainer.removeChild(loadingDiv);
-                // 创建机器人消息框
-                const botMsgDiv = addMessage('', 'bot');
+                // 将思考气泡切换为回答气泡
+                botMsgDiv.classList.remove('thinking-message', 'loading');
+                botMsgDiv.textContent = '';
 
                 // 处理流式响应
                 const reader = response.body.getReader();
@@ -156,10 +228,36 @@
                 }
 
             } catch (error) {
-                loadingDiv.textContent = `❌ 出错了：${error.message}`;
+                botMsgDiv.classList.remove('thinking-message', 'loading');
+                botMsgDiv.textContent = `❌ 出错了：${error.message}`;
             } finally {
                 sendBtn.disabled = false;
             }
+        }
+
+        // 添加机器人思考气泡
+        function addThinkingMessage() {
+            const div = document.createElement('div');
+            div.className = 'message bot-message loading thinking-message';
+            div.setAttribute('aria-label', '正在思考中');
+
+            const dots = document.createElement('span');
+            dots.className = 'thinking-dots';
+            dots.setAttribute('aria-hidden', 'true');
+
+            for (let i = 0; i < 3; i++) {
+                dots.appendChild(document.createElement('span'));
+            }
+
+            const text = document.createElement('span');
+            text.className = 'thinking-text';
+            text.textContent = '思考中';
+
+            div.appendChild(dots);
+            div.appendChild(text);
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return div;
         }
 
         // 添加消息到聊天框

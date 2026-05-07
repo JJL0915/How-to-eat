@@ -24,6 +24,7 @@ class GenerationIntegrationModule:
         model_name: str = "qwen3.5-35b-a3b",
         temperature: float = 0.1,
         max_tokens: int = 2048,
+        api_key: str = "",
     ):
         """
         初始化生成集成模块
@@ -32,10 +33,12 @@ class GenerationIntegrationModule:
             model_name: 模型名称
             temperature: 生成温度
             max_tokens: 最大token数
+            api_key: 阿里云 DashScope API 密钥
         """
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.api_key = api_key
         self.llm = None
         self.setup_llm()
 
@@ -43,9 +46,9 @@ class GenerationIntegrationModule:
         """初始化大语言模型"""
         logger.info(f"正在初始化LLM:{self.model_name}")
 
-        api_key = os.environ.get("ALI_API_KEY")
+        api_key = self.api_key or os.environ.get("ALI_API_KEY")
         if not api_key:
-            raise ValueError("请设置 ALI_API_KEY环境变量")
+            raise ValueError("请在项目根目录的 .env 中设置 ALI_API_KEY")
         try:
             self.llm = ChatOpenAI(
                 model=self.model_name,

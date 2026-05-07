@@ -2,7 +2,6 @@
 RAG系统主程序
 """
 
-import os
 import sys
 import logging
 from pathlib import Path
@@ -12,7 +11,6 @@ from typing import List
 # 添加模块路径
 sys.path.append(str(Path(__file__).parent))
 
-# from dotenv import load_dotenv
 from config import DEFAULT_CONFIG, RAGConfig
 from rag_modules import (
     DataPreparationModule,
@@ -21,8 +19,7 @@ from rag_modules import (
     GenerationIntegrationModule,
 )
 
-# 加载环境变量 如果有.env文件
-# load_dotenv()
+# .env 会在 config.py 导入时自动加载
 
 # 配置日志
 logging.basicConfig(
@@ -52,8 +49,10 @@ class RecipeRAGSystem:
             raise ValueError(f"数据路径不存在:{self.config.data_path}")
 
         # 检查API密钥
-        if not os.environ.get("ALI_API_KEY"):
-            raise ValueError(f"请设置ALI_API_KEY 环境变量")
+        if not self.config.ali_api_key:
+            raise ValueError(
+                f"请在项目根目录的 .env 中设置 {self.config.api_key_env_name}"
+            )
 
     def initialize_system(self):
         """初始化所有模块"""
@@ -76,6 +75,7 @@ class RecipeRAGSystem:
             model_name=self.config.llm_model,
             temperature=self.config.temperature,
             max_tokens=self.config.max_tokens,
+            api_key=self.config.ali_api_key,
         )
 
         print("✅ 系统初始化完成！")

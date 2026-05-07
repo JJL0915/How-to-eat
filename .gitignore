@@ -15,6 +15,9 @@ __pycache__/
 *.log
 *.tmp
 
+#忽视api配置文件
+.env
+
 # 忽略RAG系统流程分析报告
 RAG系统流程分析报告.txt
 
