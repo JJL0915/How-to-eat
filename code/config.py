@@ -28,11 +28,7 @@ def _load_dotenv_file(dotenv_path: Path) -> None:
         if not key:
             continue
 
-        if (
-            len(value) >= 2
-            and value[0] == value[-1]
-            and value[0] in {'"', "'"}
-        ):
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
             value = value[1:-1]
 
         os.environ.setdefault(key, value)
@@ -64,10 +60,6 @@ class RAGConfig:
 
     # 模型配置
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
-    # 如需使用本地缓存的嵌入模型，可以改为本地模型目录
-    # embedding_model: str = (
-    #     r"C:\Users\jjl0915\.cache\huggingface\hub\models--BAAI--bge-small-zh-v1.5\snapshots"
-    # )
 
     llm_model: str = "qwen3.5-35b-a3b"
 
