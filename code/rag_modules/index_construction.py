@@ -3,13 +3,12 @@
 """
 
 import logging
-from typing import List
+from typing import Iterator, List, Set
 from pathlib import Path
 
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
-from langchain_community.embeddings import DashScopeEmbeddings
 
 logger = logging.getLogger(__name__)
 
@@ -102,22 +101,66 @@ class IndexConstructionModule:
             logger.warning(f"加载向量索引失败:{e}")
             return None
 
-    def add_documetns(self, new_chunks: List[Document]):
+    def get_indexed_parent_ids(self) -> Set[str]:
+        """获取当前 FAISS 索引中已存在的父文档 ID 集合。"""
+        if not self.vectorstore:
+            raise ValueError("请先构建或加载向量索引")
+
+        parent_ids: Set[str] = set()
+        for doc in self._iter_indexed_documents():
+            parent_id = doc.metadata.get("parent_id")
+            if parent_id:
+                parent_ids.add(parent_id)
+
+        return parent_ids
+
+    def _iter_indexed_documents(self) -> Iterator[Document]:
+        """遍历 FAISS docstore 中的文档对象。"""
+        if not self.vectorstore:
+            return
+
+        docstore = getattr(self.vectorstore, "docstore", None)
+        if not docstore:
+            return
+
+        index_to_docstore_id = getattr(self.vectorstore, "index_to_docstore_id", {})
+        if index_to_docstore_id and hasattr(docstore, "search"):
+            for docstore_id in index_to_docstore_id.values():
+                doc = docstore.search(docstore_id)
+                if isinstance(doc, Document):
+                    yield doc
+            return
+
+        docstore_dict = getattr(docstore, "_dict", None)
+        if isinstance(docstore_dict, dict):
+            for doc in docstore_dict.values():
+                if isinstance(doc, Document):
+                    yield doc
+
+    def add_documents(self, new_chunks: List[Document]) -> int:
         """
         向现有索引添加新文档
 
         Args:
             new_chunks: 新的文档块列表
+
+        Returns:
+            实际添加到索引的文档块数量
         """
         if not self.vectorstore:
             raise ValueError("请先构建向量索引")
+        if not new_chunks:
+            logger.info("没有新文档需要添加到索引")
+            return 0
 
         try:
             logger.info(f"正在添加 {len(new_chunks)} 个新文档到索引...")
             self.vectorstore.add_documents(new_chunks)
             logger.info("新文档添加完成")
+            return len(new_chunks)
         except Exception as e:
-            logger.warning(f"添加新文档到索引失败")
+            logger.warning(f"添加新文档到索引失败: {e}")
+            raise
 
     def similarity_search(self, query: str, k: int = 5) -> List[Document]:
         """

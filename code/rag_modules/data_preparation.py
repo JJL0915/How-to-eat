@@ -9,9 +9,7 @@ from typing import List, Dict, Any
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain_core.documents import Document
-from pathlib import Path
 import uuid
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +28,10 @@ class DataPreparationModule:
         "aquatic": "水产",
         "condiment": "调料",
         "drink": "饮品",
+        "semi-finished": "半成品",
     }
 
-    CATEGORY_LABLES = list(set(CATEGORY_MAPPING.values()))
+    CATEGORY_LABELS = list(dict.fromkeys(CATEGORY_MAPPING.values()))
 
     DIFFICULTY_LABELS = ["非常简单", "简单", "中等", "困难", "非常困难"]
 
@@ -145,7 +144,7 @@ class DataPreparationModule:
     @classmethod
     def get_supported_categories(cls) -> List[str]:
         """对外部提供支持的分类标签列表"""
-        return cls.CATEGORY_LABLES
+        return cls.CATEGORY_LABELS
 
     @classmethod
     def get_supported_difficulties(cls) -> List[str]:

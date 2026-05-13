@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from pydantic import BaseModel
+from typing import Optional
 
 # 添加项目路径
 sys.path.append(str(Path(__file__).parent))
@@ -64,6 +65,7 @@ app.add_middleware(
 class QuestionRequest(BaseModel):
     question: str
     stream: bool = True
+    session_id: Optional[str] = None
 
 
 # ===================== API接口=====================
@@ -81,12 +83,20 @@ async def ask_question(request: QuestionRequest):
         if request.stream:
 
             def generate():
-                for chunk in rag_system.ask_question(request.question, stream=True):
+                for chunk in rag_system.ask_question(
+                    request.question,
+                    stream=True,
+                    session_id=request.session_id,
+                ):
                     yield chunk
 
             return StreamingResponse(generate(), media_type="text/plain; charset=utf-8")
         else:
-            answer = rag_system.ask_question(request.question, stream=False)
+            answer = rag_system.ask_question(
+                request.question,
+                stream=False,
+                session_id=request.session_id,
+            )
             return {"answer": answer}
 
     except Exception as e:

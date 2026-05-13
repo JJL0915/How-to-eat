@@ -185,6 +185,19 @@
         const chatContainer = document.getElementById('chat-container');
         const questionInput = document.getElementById('question-input');
         const sendBtn = document.getElementById('send-btn');
+        const sessionId = getSessionId();
+
+        function getSessionId() {
+            const storageKey = 'how-to-eat-session-id';
+            const existingSessionId = localStorage.getItem(storageKey);
+            if (existingSessionId) return existingSessionId;
+
+            const newSessionId = crypto.randomUUID
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+            localStorage.setItem(storageKey, newSessionId);
+            return newSessionId;
+        }
 
         // 发送问题
         async function sendQuestion() {
@@ -206,7 +219,11 @@
                 const response = await fetch('http://localhost:8000/api/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: question, stream: true })
+                    body: JSON.stringify({
+                        question: question,
+                        stream: true,
+                        session_id: sessionId
+                    })
                 });
 
                 // 将思考气泡切换为回答气泡
